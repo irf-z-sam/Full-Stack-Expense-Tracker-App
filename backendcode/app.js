@@ -16,8 +16,8 @@ app.use(loginDetails);
 
 sequelize.sync()
 .then(()=>{
-    app.listen(700,()=>{
-        console.log('server running on 700 port');
+    app.listen(3000,()=>{
+        console.log('server running on 3000 port');
     })
 })
 .catch((error)=>{

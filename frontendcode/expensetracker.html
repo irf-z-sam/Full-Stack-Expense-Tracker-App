@@ -142,7 +142,7 @@
 
             //when you click the edit button u are able to edit the changes
             editButton.onclick = () => {
-                axios.delete(`http://localhost:700/delete-expense/${obj.id}`)
+                axios.delete(`http://localhost:3000/delete-expense/${obj.id}`)
                     .then((response) => {
                         parentEle.removeChild(childEle)
                     })
