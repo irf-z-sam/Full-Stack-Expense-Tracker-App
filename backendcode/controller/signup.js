@@ -1,4 +1,5 @@
 const signUpUserDetails = require('../models/signup');
+const bcrypt = require('bcrypt');
 
 //for eg if we keep email column in form as blank and if i submit data will not be added to the database table (remove required text from signup.html page then only it works)
 /*
@@ -52,11 +53,24 @@ exports.adduserDB = async (req,res,next) =>{
         }
         */
 
-        const data = await signUpUserDetails.create({
+         //Your users's password is at risk!!! :
+
+        //here we are taking password,adding salt to it and then we are doing password encription using "blowfish algorithm"
+        //so that we will get different different hash value eventhough userA,userB password are same
+        //these hash value we will be storing in database as password
+        const saltrounds = 10; //by defautl value of saltround will be 10
+        //This line defines the number of salt rounds to be used during the password hashing process.
+        //The higher the number, the more secure the hash will be, but it will also take longer to compute.
+        bcrypt.hash(password, saltrounds, async (err,hash) =>{
+            console.log(err);
+
+            const data = await signUpUserDetails.create({
             name:name,
             email:email,
-            password:password
+            password:hash
         });
+        
+        })
         
         
         res.json({success:true,message:'Signup succesfull,login to enter a page'});

@@ -25,7 +25,7 @@ const signUpUserDetails = sequelize.define('users',{
 
 async function createUsersTable(){
     try{
-        const data = await signUpUserDetails.sync() //{force:true}
+     await signUpUserDetails.sync() //{force:true}
         console.log('table called users created successfully on database table');
     }catch(error){
         console.log('error while creating users table on database table',error);

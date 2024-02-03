@@ -1,4 +1,5 @@
 const signUpUserDetails = require('../models/signup');
+const bcrypt = require('bcrypt');
 
 //login page
 exports.login = async (req,res) =>{
@@ -19,11 +20,18 @@ exports.login = async (req,res) =>{
         const uniqEmail = await signUpUserDetails.findAll({where:{email:email}})
         console.log('uniqEmail',uniqEmail);
         if(uniqEmail.length !== 0){
-            if(uniqEmail[0].password === password){
-                return res.status(200).json({success:true,message:'user logged in succesfully'})
-            }else{
-                return res.status(400).json({success:false,message:'incorrect password'})
-            }
+            //The bcrypt.compare function is used to compare the password entered by the user (in plain text) in form fields
+            //with the hashed password retrieved from the database.
+            bcrypt.compare(password,uniqEmail[0].password, (err,result)=>{
+                if(err){
+                    throw new error('something went wrong');
+                }
+                if(result === true){
+                    return res.status(200).json({success:true,message:'user logged in succesfully'})
+                }else{
+                    return res.status(400).json({success:false,message:'incorrect password'})
+                }
+            })
         }else{
             return res.status(400).json({success:false,message:'user does not exist'})
         }
