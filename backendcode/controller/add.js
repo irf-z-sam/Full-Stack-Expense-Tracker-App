@@ -5,7 +5,6 @@ const alldetails = require('../models/define');
 //how we can add means we need to first get the values of form fields like name,email,phone (req.body holds all these variables)
 //we we make an http request(means when we click on submit button) forms fileds like expens,descript,categ values stored in an request.body
 
-
 exports.addexpense = async(req,res,next) =>{
     try{
         const expens = req.body.expens;
@@ -20,7 +19,13 @@ exports.addexpense = async(req,res,next) =>{
         const data = await alldetails.create({
             expens:expens,
             descript:descript,
-            categ:categ
+            categ:categ,
+            userId:req.user.id  
+            //when we make an post request url along with in headers we are passing token
+            //backend will recieves token and in the middleware we are dcrypting the token so we will get userId
+            //from the userId you will comes to know that who is logged in
+            //when we are adding the expenses what we have to do means in expense.create method just add the userId:req.user.id that's it 
+
         })
         res.json({expensedata:data});
         console.log('res from addexpense method',data);
@@ -44,12 +49,17 @@ exports.addexpense = async(req,res,next) =>{
 //Finally, the res.json() method is used to send a JSON response back to the client. 
 //It sends an object with a property named alluser, which contains the modifiedData array.
 
-exports.getexpense = async (req,res) =>{
+exports.getexpense = async (req,res,next) =>{
     try{
-        const data = await alldetails.findAll();
+        const data=await alldetails.findAll({where:{userId:req.user.id}}); //{where:{userId:req.user.id}}
+        //when we make an get request url along with in headers we are passing token
+        //backend will recieves token and in the middleware we are dcrypting the token so we will get userId
+        //from the userId backend will comes to know that who's loggedin and backend get the respective user's expense from expense table
+        //it send this expense as a respond back to the client
         res.json({getexpense:data});
         console.log('res from getexpense method',data);
     }catch(error){
+        res.json({Error:error})
         console.log('error from getexpense method',error);
     }
 }
@@ -62,7 +72,12 @@ exports.deleteexpense = async (req,res) =>{
             throw new error('id is mandatory to delete');
         }
         const detailsId = req.params.id;
-        const data  = await alldetails.destroy({where:{id:detailsId}});
+        const data  = await alldetails.destroy({where:{id:detailsId, userId:req.user.id}});
+            //when we make an delete request url along with in headers we are passing token
+            //backend will recieved token and in the middleware we are dcrypting the token so we will get userId
+            //in expense.destroy where we also pass userId:req.user.id
+            //i cannot delete others added expenses in the app,they also not able to delete my added expenses
+            //if u want to check this means expense.finAll() keep it like this only so we can get all added expenses
         res.json({deleted:data});
     }catch(error){
         res.json({Error:error});
@@ -70,6 +85,7 @@ exports.deleteexpense = async (req,res) =>{
     }
 }
 
+/*
 exports.editexpense = async (req,res) =>{
     try{
         console.log('params id',req.params.id);
@@ -83,4 +99,4 @@ exports.editexpense = async (req,res) =>{
         res.json({Error:error});
         console.log('error from delete expense method',error);
     }
-}
+}  */

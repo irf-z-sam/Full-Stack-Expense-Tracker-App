@@ -13,7 +13,7 @@ async function signup(event){
       }
       console.log('signupDetails',signupDetails);
 
-      const response = await axios.post('http://localhost:3000/adduser-DB',signupDetails);
+      const response = await axios.post('http://localhost:3000/signup',signupDetails);
       event.target.reset();
       if(response.status === 200){
           window.location.href = "./login.html" //redirecting user to login page if response was successful

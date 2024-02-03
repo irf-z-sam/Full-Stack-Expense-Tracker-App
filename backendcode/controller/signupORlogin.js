@@ -1,5 +1,6 @@
 const signUpUserDetails = require('../models/signup');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 //for eg if we keep email column in form as blank and if i submit data will not be added to the database table (remove required text from signup.html page then only it works)
 /*
@@ -12,7 +13,7 @@ function isstringvalid(string){
 } */
 
 //Sign Up page:
-exports.adduserDB = async (req,res,next) =>{
+exports.signup = async (req,res,next) =>{
     try{
         const name = req.body.name;
         const email = req.body.email;
@@ -38,7 +39,7 @@ exports.adduserDB = async (req,res,next) =>{
         //it will find wheather the entered mail id matches with existing mail id
         if(uniqueEmail.length !== 0){
             //if email id matches we comes to know that 
-            return res.status(400).json({success:false,message:'user already exist,change the Email'})
+            return res.status(500).json({success:false,message:'user already exist,change the Email'})
         }
         /* 
         else if(uniqueEmail.length === 0){
@@ -53,12 +54,11 @@ exports.adduserDB = async (req,res,next) =>{
         }
         */
 
-         //Your users's password is at risk!!! :
-
+        //Your users's password is at risk!!! :
         //here we are taking password,adding salt to it and then we are doing password encription using "blowfish algorithm"
         //so that we will get different different hash value eventhough userA,userB password are same
         //these hash value we will be storing in database as password
-        const saltrounds = 10; //by defautl value of saltround will be 10
+        const saltrounds = 10; //by defautl value of saltroud will be 10
         //This line defines the number of salt rounds to be used during the password hashing process.
         //The higher the number, the more secure the hash will be, but it will also take longer to compute.
         bcrypt.hash(password, saltrounds, async (err,hash) =>{
@@ -71,13 +71,21 @@ exports.adduserDB = async (req,res,next) =>{
         });
         
         })
-        
+
         
         res.json({success:true,message:'Signup succesfull,login to enter a page'});
     }catch(error){
         console.log('error from adduserdb',error);
         res.json({success:false,message:'user already exist..please signup with new email'});
     }
+}
+
+//wrtiting function to create an token,jwt.sign takes two parameters i.e payload as userId:id & secret key 'fiuhf2bd484fdfhfff656ffhfEwddfkmnv'
+//this secret we should not share with anyone if we are in actual production,not even push to git also.
+//this secret key only we need to use in dcrypt
+//secret key anything you can give
+function generateToken(id){
+    return jwt.sign({userId: id},'fiuhf2bd484fdfhfff656ffhfEwddfkmnv');
 }
 
 //login page
@@ -87,8 +95,8 @@ exports.login = async (req,res) =>{
         const email = req.body.email;
         const password = req.body.password;
 
-        if(email.length === 0 || password.length === 0){
-            res.status(400).json({success:false,message:'email or password is missing'})
+        if(email.length === "" || password.length === ""){
+            return res.status(400).json({success:false,message:'email or password is missing'})
         }
         //find wheather entered email matches with existing email in database
         //matched email is stored in uniqEmail
@@ -96,15 +104,29 @@ exports.login = async (req,res) =>{
         //if matches then user logged in succesfully
         //if password does not match then incorrect password
         //if email length ===0 then user does not exist
-        const uniqEmail = signUpUserDetails.findAll({where:{email:email}})
-        if(uniqEmail.length !==0){
-            if(uniqEmail[0].password === password){
-                res.status(200).json({success:true,message:'user logged in succesfully'})
-            }else{
-                res.status(400).json({success:false,message:'incorrect password'})
-            }
+        const uniqEmail = await signUpUserDetails.findAll({where:{email:email}})
+        console.log('uniqEmail',uniqEmail);
+        if(uniqEmail.length !== 0){
+            //The bcrypt.compare function is used to compare the password entered by the user (in plain text) in form fields
+            //with the hashed password retrieved from the database.
+            bcrypt.compare(password,uniqEmail[0].password, (err,result)=>{
+                if(err){
+                    throw new error('something went wrong');
+                }
+                if(result === true){
+                    return res.status(200).json({success:true,message:'user logged in succesfully', token:generateToken(uniqEmail[0].id)}) 
+                    //when user try to login by entering mail id ,password 
+                    //then backend will verify that wheather entered  mail id, password is corrrect or not 
+                    //if correct then login was succesfull then backend will create token specific to that user 
+                    //backend will generate token 
+                }else{
+                    return res.status(400).json({success:false,message:'incorrect password'})
+                }
+            })
+                
+            
         }else{
-            res.status(400).json({success:false,message:'user does not exist'})
+            return res.status(400).json({success:false,message:'user does not exist'})
         }
     }catch(error){
         console.log('error from login page',error);
