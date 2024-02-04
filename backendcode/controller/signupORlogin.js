@@ -84,8 +84,17 @@ exports.signup = async (req,res,next) =>{
 //this secret we should not share with anyone if we are in actual production,not even push to git also.
 //this secret key only we need to use in dcrypt
 //secret key anything you can give
-function generateToken(id){
-    return jwt.sign({userId: id},'fiuhf2bd484fdfhfff656ffhfEwddfkmnv');
+
+//used do decode jwt token (how to decode jwt token in front end)
+//here we are fixing bug i.e is if user purchased premium membership then if i refresh the page or premium purchased user loggedin again 
+//then "Premium Purchased" text will goes off and Buy premium button will showned again this is the bug we need to fix it
+//once user purchased premium then if he loggedin again or refreshes the page always show him msg Pemium Purchased instead of Buy premium button
+
+//while creating token along with pass ispremiumUser then pass these token to front end , in front end we will decrypt the token
+//so that we comes to know which user purchased premium
+
+function generateToken(id,ispremiumUser){
+    return jwt.sign({userId: id,isPremium: ispremiumUser},'fiuhf2bd484fdfhfff656ffhfEwddfkmnv');
 }
 
 //login page
@@ -114,7 +123,7 @@ exports.login = async (req,res) =>{
                     throw new error('something went wrong');
                 }
                 if(result === true){
-                    return res.status(200).json({success:true,message:'user logged in succesfully', token:generateToken(uniqEmail[0].id)}) 
+                    return res.status(200).json({success:true,message:'user loggedin succesfully', token:generateToken(uniqEmail[0].id,uniqEmail[0].ispremiumUser)}) 
                     //when user try to login by entering mail id ,password 
                     //then backend will verify that wheather entered  mail id, password is corrrect or not 
                     //if correct then login was succesfull then backend will create token specific to that user 

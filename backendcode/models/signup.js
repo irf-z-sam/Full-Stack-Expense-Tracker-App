@@ -20,12 +20,13 @@ const signUpUserDetails = sequelize.define('users',{
     password:{
         type:Sequelize.STRING,
         allowNull:false
-    }
+    },
+    ispremiumUser:Sequelize.BOOLEAN //adding extra column and if user is premium true if not false
 })
 
 async function createUsersTable(){
     try{
-     await signUpUserDetails.sync() //{force:true}
+        const data = await signUpUserDetails.sync() //{force:true}
         console.log('table called users created successfully on database table');
     }catch(error){
         console.log('error while creating users table on database table',error);

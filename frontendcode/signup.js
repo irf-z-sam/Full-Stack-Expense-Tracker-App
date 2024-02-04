@@ -30,4 +30,6 @@ async function signup(event){
       `;
       document.body.innerHTML += errorHtml;
     }
+    
+    
 }

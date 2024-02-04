@@ -12,7 +12,7 @@ async function saveToCloudStoarage(event) {
     event.target.reset();
     alert(response.data.message)
     localStorage.setItem('token',response.data.token); 
-    //when u make above request to the backend server will go inside routes folder, it finds login method inside rouutes file
+    //when u make above request to the backend server will go inside routes folder, it finds login method inside routes file
     //server will go the control file where it performs neccesary validation such as checking wheather user logined succefully or not like that
     //login was successful backend will create token specific to that user
     //when you get response back from the server u will also get token in the front end using response.data.token
